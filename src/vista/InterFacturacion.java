@@ -30,6 +30,28 @@ public class InterFacturacion extends javax.swing.JInternalFrame {
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+
+        private void jButton_busca_clienteActionPerformed(java.awt.event.ActionEvent evt) {                                                      
+        String clienteBuscar = txt_cliente_buscar.getText().trim();
+        Connection cn = Conexion.conectar();
+        String sql = "select nombre, apellido from tb_cliente where cedula = '" + clienteBuscar + "'";
+        Statement st;
+        try {
+            st = cn.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+
+            if (rs.next()) {
+                jComboBox_cliente.setSelectedItem(rs.getString("nombre") + " " + rs.getString("apellido"));
+            } else {
+                jComboBox_cliente.setSelectedItem("Seleccione cliente:");
+                JOptionPane.showMessageDialog(null, "¡Cedula de cliente incorrecta o no encontrada!");
+            }
+            txt_cliente_buscar.setText("");
+            cn.close();
+        } catch (SQLException e) {
+            System.out.println("¡Error al buscar cliente!, " + e);
+        }
+    }
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
