@@ -11,6 +11,10 @@ public class InterFacturacion extends javax.swing.JInternalFrame {
         initComponents();
         this.setSize(new Dimension(800, 600));
         this.setTitle("Facturacion");
+
+        //Cargar lo Clientes en la vista - cargar productos
+        this.CargarComboClientes();
+        this.CargarComboProductos();
         
          //insertar imagen en nuestro JLabel
         ImageIcon wallpaper = new ImageIcon("src/img/fondo3.jpg");
@@ -230,4 +234,46 @@ public class InterFacturacion extends javax.swing.JInternalFrame {
     private javax.swing.JTextField txt_subtotal;
     private javax.swing.JTextField txt_total_pagar;
     // End of variables declaration//GEN-END:variables
+
+    /*
+    Metodo para cargar los clientes en el jComboBox
+    */
+    private void CargarComboClientes() {
+        Connection cn = Conexion.conectar();
+        String sql = "select * from tb_cliente";
+        Statement st;
+        try {
+            st = cn.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+            jComboBox_cliente.removeAllItems();
+            jComboBox_cliente.addItem("Seleccione cliente:");
+            while (rs.next()) {
+                jComboBox_cliente.addItem(rs.getString("nombre") + " " + rs.getString("apellido"));
+            }
+            cn.close();
+        } catch (SQLException e) {
+            System.out.println("¡Error al cargar clientes, !" + e);
+        }
+    }
+
+    /*
+    Metodo para cargar los productos en el jComboBox
+    */
+    private void CargarComboProductos() {
+        Connection cn = Conexion.conectar();
+        String sql = "select * from tb_producto";
+        Statement st;
+        try {
+            st = cn.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+            jComboBox_producto.removeAllItems();
+            jComboBox_producto.addItem("Seleccione producto:");
+            while (rs.next()) {
+                jComboBox_producto.addItem(rs.getString("nombre"));
+            }
+            cn.close();
+        } catch (SQLException e) {
+            System.out.println("¡Error al cargar productos, !" + e);
+        }
+    }
 }
