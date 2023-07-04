@@ -1,8 +1,5 @@
 package modelo;
 
-/**
- * @author ediso
- */
 public class CabeceraVenta {
     
     //Atributos
