@@ -6,6 +6,27 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 public class InterFacturacion extends javax.swing.JInternalFrame {
+    
+    //Modelo de los datos
+    private DefaultTableModel modeloDatosProductos;
+    //lista para el detalle de venta de los productos
+    ArrayList<DetalleVenta> listaProductos = new ArrayList<>();
+    private DetalleVenta producto;
+
+    private int idProducto = 0;
+    private String nombre = "";
+    private int cantidadProductoBBDD = 0;
+    private double precioUnitario = 0.0;
+    private int porcentajeIva = 0;
+
+    private int cantidad = 0;//cantidad de productos a comprar
+    private double subtotal = 0.0;//cantidad por precio
+    private double descuento = 0.0;
+    private double iva = 0.0;
+    private double totalPagar = 0.0;
+
+    private int auxIdDetalle = 1;//id del detalle de venta
+
 
     public InterFacturacion() {
         initComponents();
@@ -23,6 +44,40 @@ public class InterFacturacion extends javax.swing.JInternalFrame {
         this.repaint();
     }
 
+    //metodo para inicializar la tabla de los productos
+    private void inicializarTablaProducto() {
+        modeloDatosProductos = new DefaultTableModel();
+        //añadir columnas
+        modeloDatosProductos.addColumn("N");
+        modeloDatosProductos.addColumn("Nombre");
+        modeloDatosProductos.addColumn("Cantidad");
+        modeloDatosProductos.addColumn("P. Unitario");
+        modeloDatosProductos.addColumn("SubTotal");
+        modeloDatosProductos.addColumn("Descuento");
+        modeloDatosProductos.addColumn("Iva");
+        modeloDatosProductos.addColumn("Total Pagar");
+        modeloDatosProductos.addColumn("Accion");
+        //agregar los datos del modelo a la tabla
+        this.jTable_productos.setModel(modeloDatosProductos);
+    }
+
+    //metodo para presentar la informacion de la tavla DetalleVenta
+    private void listaTablaProductos() {
+        this.modeloDatosProductos.setRowCount(listaProductos.size());
+        for (int i = 0; i < listaProductos.size(); i++) {
+            this.modeloDatosProductos.setValueAt(i + 1, i, 0);
+            this.modeloDatosProductos.setValueAt(listaProductos.get(i).getNombre(), i, 1);
+            this.modeloDatosProductos.setValueAt(listaProductos.get(i).getCantidad(), i, 2);
+            this.modeloDatosProductos.setValueAt(listaProductos.get(i).getPrecioUnitario(), i, 3);
+            this.modeloDatosProductos.setValueAt(listaProductos.get(i).getSubTotal(), i, 4);
+            this.modeloDatosProductos.setValueAt(listaProductos.get(i).getDescuento(), i, 5);
+            this.modeloDatosProductos.setValueAt(listaProductos.get(i).getIva(), i, 6);
+            this.modeloDatosProductos.setValueAt(listaProductos.get(i).getTotalPagar(), i, 7);
+            this.modeloDatosProductos.setValueAt("Eliminar", i, 8);//aqui luego poner un boton de eliminar
+        }
+        //añadir al Jtable
+        jTable_productos.setModel(modeloDatosProductos);
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -52,6 +107,77 @@ public class InterFacturacion extends javax.swing.JInternalFrame {
             System.out.println("¡Error al buscar cliente!, " + e);
         }
     }
+
+        private void jButton_añadir_productoActionPerformed(java.awt.event.ActionEvent evt) {                                                        
+
+        String combo = this.jComboBox_producto.getSelectedItem().toString();
+        //validar que seleccione un producto
+        if (combo.equalsIgnoreCase("Seleccione producto:")) {
+            JOptionPane.showMessageDialog(null, "Seleccione un producto");
+        } 
+        else {
+            //validar que ingrese una cantidad
+            if (!txt_cantidad.getText().isEmpty()) {
+                //validar que el usuario no ingrese caracteres no numericos
+                boolean validacion = validar(txt_cantidad.getText());
+                if (validacion == true) {
+                    //validar que la cantidad sea mayor a cero
+                    if (Integer.parseInt(txt_cantidad.getText()) > 0) {
+                        cantidad = Integer.parseInt(txt_cantidad.getText());
+                        //ejecutar metodo para obtener datos del producto
+                        this.DatosDelProducto();
+                        //validar que la cantidad de productos seleccionado no sea mayor al stock de la base de datos
+                        if (cantidad <= cantidadProductoBBDD) {
+
+                            subtotal = precioUnitario * cantidad;
+                            totalPagar = subtotal + iva + descuento;
+
+                            //redondear decimales
+                            subtotal = (double) Math.round(subtotal * 100) / 100;
+                            iva = (double) Math.round(iva * 100) / 100;
+                            descuento = (double) Math.round(descuento * 100) / 100;
+                            totalPagar = (double) Math.round(totalPagar * 100) / 100;
+
+                            //se crea un nuevo producto
+                            producto = new DetalleVenta(auxIdDetalle,//idDetalleVenta
+                                    1, //idCabecera
+                                    idProducto,
+                                    nombre,
+                                    Integer.parseInt(txt_cantidad.getText()),
+                                    precioUnitario,
+                                    subtotal,
+                                    descuento,
+                                    iva,
+                                    totalPagar,
+                                    1//estado
+                            );
+                            //añadir a la lista
+                            listaProductos.add(producto);
+                            JOptionPane.showMessageDialog(null, "Producto Agregado");
+                            auxIdDetalle++;
+                            txt_cantidad.setText("");//limpiar el campo
+                            //volver a cargar combo productos
+                            this.CargarComboProductos();
+                            this.CalcularTotalPagar();
+                            txt_efectivo.setEnabled(true);
+                            jButton_calcular_cambio.setEnabled(true);
+
+                        } else {
+                            JOptionPane.showMessageDialog(null, "La cantidad supera el Stock");
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(null, "La cantidad no puede ser cero (0), ni negativa");
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "En la cantidad no se admiten caracteres no numericos");
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Ingresa la cantidad de productos");
+            }
+        }
+        //llamar al metodo
+        this.listaTablaProductos();
+    }  
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
@@ -297,5 +423,64 @@ public class InterFacturacion extends javax.swing.JInternalFrame {
         } catch (SQLException e) {
             System.out.println("¡Error al cargar productos, !" + e);
         }
+    }
+
+     /*
+    Metodo para validar que el usuario no ingrese caracteres no numericos
+     */
+    private boolean validar(String valor) {
+        try {
+            int num = Integer.parseInt(valor);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    /*
+    Metodo para mostrar los datos del producto seleccionado
+    */
+    private void DatosDelProducto() {
+        try {
+            String sql = "select * from tb_producto where nombre = '" + this.jComboBox_producto.getSelectedItem() + "'";
+            Connection cn = Conexion.conectar();
+            Statement st;
+            st = cn.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+            while (rs.next()) {
+                idProducto = rs.getInt("idProducto");
+                nombre = rs.getString("nombre");
+                cantidadProductoBBDD = rs.getInt("cantidad");
+                precioUnitario = rs.getDouble("precio");
+                porcentajeIva = rs.getInt("porcentajeIva");
+                this.CalcularIva(precioUnitario, porcentajeIva);//calcula y retorna el iva
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al obtener datos del producto, " + e);
+        }
+    }
+
+    /*
+    Metodo para calcular iva
+    */
+    private double CalcularIva(double precio, int porcentajeIva) {
+        int p_iva = porcentajeIva;
+
+        switch (p_iva) {
+            case 0:
+                iva = 0.0;
+                break;
+            case 12:
+                iva = (precio * cantidad) * 0.12;
+                break;
+            case 14:
+                iva = (precio * cantidad) * 0.14;
+                break;
+            default:
+                break;
+        }
+
+        return iva;
     }
 }
