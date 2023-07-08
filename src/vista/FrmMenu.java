@@ -297,7 +297,9 @@ public class FrmMenu extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem_gestionar_usuarioActionPerformed
 
     private void jMenuItem_nueva_ventaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem_nueva_ventaActionPerformed
-        
+        InterFacturacion interFacturacion = new InterFacturacion();
+        jDesktopPane_menu.add(interFacturacion);
+        interFacturacion.setVisible(true);
     }//GEN-LAST:event_jMenuItem_nueva_ventaActionPerformed
 
     /**
